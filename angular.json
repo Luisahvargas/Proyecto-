@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "prueba-tecnica": {
+    "prueba-tecnica-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -57,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "prueba-tecnica:build:production"
+              "buildTarget": "prueba-tecnica-frontend:build:production"
             },
             "development": {
-              "buildTarget": "prueba-tecnica:build:development"
+              "buildTarget": "prueba-tecnica-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

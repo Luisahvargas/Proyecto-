@@ -1,59 +1,132 @@
-# PruebaTecnica
+# Frontend – Angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.1.
+Aplicación frontend desarrollada como prueba técnica, enfocada en **búsqueda reactiva** y **gestión de estado moderna**, priorizando performance, arquitectura limpia y una experiencia de usuario clara.
 
-## Development server
+## Iniciar Proyecto
 
-To start a local development server, run:
+### Requisitos
+- Node.js
+- npm
+- Angular CLI
+
+### Instalación y ejecución
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar aplicación
 ng serve
+
+# Abrir en el navegador
+http://localhost:4200
+```
+## Arquitectura del proyecto
+
+src/
+├── app/
+│   ├── app.component.ts              # Componente raíz
+│   ├── customer-search.component.ts  # Búsqueda reactiva con RxJS
+│   ├── cart.service.ts               # Gestión de estado con Signals
+│   ├── shopping-cart.component.ts    # Componente UI del carrito
+│   └── *.spec.ts                     # Tests unitarios
+├── main.ts                           # Bootstrap de la aplicación
+├── index.html
+└── styles.css                        # Estilos globales
+
+## Diseño y Experiencia de Usuario (UX)
+
+- Interfaz limpia y moderna
+- Diseño responsive 
+- Espaciados claros y buena jerarquía visual
+- Feedback visual inmediato
+- Estados de carga bien definidos
+- Animaciones sutiles sin sobrecargar la interfaz
+
+## Búsqueda Reactiva con RxJS
+
+La funcionalidad de búsqueda se implementa utilizando operadores RxJS para optimizar la experiencia del usuario y el rendimiento de la aplicación.
+
+```typescript
+searchSubject$.pipe(
+  debounceTime(400),          // Esperar después de input
+  distinctUntilChanged(),       //  Evitar duplicados
+  filter(term => term.length >= 3), //  Validar longitud
+  switchMap(term => search(term))   //  Cancelar anteriores
+)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Gestión de Estado con Angular Signals
 
-## Code scaffolding
+Para el manejo del estado del carrito se utilizan Angular Signals, permitiendo una reactividad más simple y eficiente.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+```Typescript
+private itemsSignal = signal<Product[]>([]);
+public items = this.itemsSignal.asReadonly();
 
-```bash
-ng generate component component-name
+public totalPrice = computed(() =>
+  this.itemsSignal().reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+);
+
+effect(() => {
+  console.log('Carrito actualizado:', this.itemsSignal());
+});
+```
+**Características:**
+- Actualizaciones de estado inmutables
+- Computed signals para estado derivado (`totalPrice`, `totalCount`)
+- Recálculo automático mediante dependencias reactivas
+- Manejo de side effects vía `effect()` para debugging/logging
+- Estado encapsulado con API pública readonly
+
+## Decisiones Técnicas
+
+### RxJS para Operaciones Asíncronas
+
+Los operadores RxJS proporcionan control de flujo asíncronoo:
+- **debounceTime:** Reduce llamadas a API esperando pausa en input del usuario
+- **switchMap:** Previene race conditions cancelando requests en vuelo
+- **distinctUntilChanged:** Elimina llamadas redundantes a API
+- **filter:** Valida input antes de procesamiento
+
+### Signals para Estado Local
+
+Angular Signals ofrece:
+- Reactividad granular sin overhead de zone.js
+- Tracking automático de dependencias para valores computados
+- Rendimiento mejorado en change detection
+- Actualizaciones de estado type-safe
+
+## Referencia de API
+
+### CustomerSearchComponent
+
+```typescript
+class CustomerSearchComponent implements OnInit, OnDestroy {
+  searchTerm: string;              // Almacena el texto ingresado por el usuario
+  results: string[];               // Lista de resultados devueltos por la búsqueda simulada
+  isLoading: boolean;              // Indica si la búsqueda está en proceso (estado de carga)
+  
+  onSearchInput(event: Event): void; // Maneja el evento de escritura del usuario y emite el valor al stream RxJS
+  ngOnInit(): void;                // Inicializa la lógica de búsqueda reactiva al montar el componente
+  ngOnDestroy(): void;             // Limpia suscripciones y recursos para evitar memory leaks
+}
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### CartService
 
-```bash
-ng generate --help
+```typescript
+class CartService {
+  items: Signal<Product[]>;        // Mantiene el estado reactivo de los productos en el carrito
+  totalPrice: Signal<number>;      // Calcula automáticamente el precio total del carrito
+  totalCount: Signal<number>;      // Calcula la cantidad total de productos
+  
+  addItem(product: Omit<Product, 'quantity'>, quantity?: number): void;  // Agrega un producto al carrito o incrementa su cantidad si ya existe
+  removeItem(productId: number): void; // Elimina un producto del carrito usando su identificador
+  updateQuantity(productId: number, quantity: number): void; // Actualiza la cantidad de un producto
+  clearCart(): void; // Vacía completamente el carrito y resetea el estado
+}
 ```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
