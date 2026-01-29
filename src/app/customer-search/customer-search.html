@@ -1,0 +1,11 @@
+<input
+  type="text"
+  placeholder="Buscar cliente..."
+  (input)="onSearch($event)"
+/>
+
+<ul>
+  <li *ngFor="let customer of results">
+    {{ customer }}
+  </li>
+</ul>
